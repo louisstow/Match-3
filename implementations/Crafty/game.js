@@ -7,16 +7,36 @@ var board = [];
 var TILE = 64;
 var BOARD_WIDTH = 6;
 var BOARD_HEIGHT = 6;
+var REAL_WIDTH = TILE * BOARD_WIDTH;
+var REAL_HEIGHT = TILE * BOARD_HEIGHT;
+var UI_HEIGHT = 50;
 var current = "nightly";
+
+var scale = window.innerWidth / REAL_WIDTH;
+
+function setScale () {
+	scale = window.innerWidth / REAL_WIDTH;
+
+	//make sure it's not bigger than the height
+	if (scale * REAL_HEIGHT > window.innerHeight) {
+		scale = window.innerHeight / REAL_HEIGHT;
+	}
+
+	var stageStyle = Crafty.stage.elem.style;
+	stageStyle.transformOrigin = stageStyle.webkitTransformOrigin = stageStyle.mozTransformOrigin = "0 0";
+	stageStyle.transform = stageStyle.webkitTransform = stageStyle.mozTransform = "scale("+scale+")";
+}
 
 function start () {
 	//init Crafty with game dimensions
 	Crafty.init(
 		BOARD_WIDTH * TILE, 
-		BOARD_HEIGHT * TILE
+		BOARD_HEIGHT * TILE + UI_HEIGHT
 	);
 
 	Crafty.background("#ccc");
+
+	setScale();
 
 	//preload our assets
 	Crafty.load(["../../assets/spritesheet.png"], function () {
@@ -47,13 +67,21 @@ Crafty.scene("main", function () {
 
 	generateBoard();
 
-	Crafty.addEvent(this, Crafty.stage.elem, "click", function (e) {
+	console.log("ADD EVENTS");
+	Crafty.addEvent(this, window, "click", onInputSelect);
+	Crafty.addEvent(this, window, "touchend", onInputSelect);
+	Crafty.addEvent(this, window, "resize", setScale);
+
+	function onInputSelect (e) {
 		
-		var x = Math.floor(e.clientX / TILE);
-		var y = Math.floor(e.clientY / TILE);
+		var pos = (e.type === "touchend") ? e.changedTouches[0] : e;
+		console.log(e.type, pos.clientX, pos.clientY);
+
+		var x = Math.floor((pos.clientX / scale) / TILE);
+		var y = Math.floor((pos.clientY / scale) / TILE);
 
 		place(x, y);
-	});
+	}
 });
 
 Crafty.c("Tile", {
@@ -83,11 +111,11 @@ Crafty.c("shakeit", {
 
 		//after 800ms stop shaking
 		setTimeout(function () {
+			clearInterval(interval);
+
 			//go back to the original position
 			this.x = this.originalX;
 			this.y = this.originalY;
-
-			clearInterval(interval);
 		}.bind(this), 800);
 	},
 
@@ -106,7 +134,9 @@ function generateBoard () {
 			var randomValue = Math.random();
 			var type = "empty";
 
-			if (randomValue < 0.1) {
+			if (randomValue < 0.05) {
+				type = "firefox";
+			} else if (randomValue < 0.1) {
 				type = "aurora";
 			} else if (randomValue < 0.2) {
 				type = "nightly";
@@ -152,7 +182,7 @@ function replaceTile (x, y, tile) {
 			ent.addComponent(ent.type);
 
 			replaceTile(x, y, ent.type);
-		}, 500);
+		}, 800);
 	}
 }
 

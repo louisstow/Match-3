@@ -1,0 +1,10 @@
+{
+	"name": "Match 3",
+	"version": "1",
+	"description": "Match 3 in Crafty",
+	"launch_path": "/implementations/Crafty/index.html",
+	"fullscreen": "true",
+	"icons": {
+		"128": "/assets/icon.png"
+	}
+}
