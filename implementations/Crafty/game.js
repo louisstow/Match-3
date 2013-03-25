@@ -23,25 +23,30 @@ function start () {
 		Match3.BOARD_HEIGHT * Match3.TILE + Match3.UI_HEIGHT
 	);
 
-	Crafty.background("#ccc");
-
 	setScale();
 
 	//preload our assets
-	Crafty.load(["../../assets/spritesheet.png"], function () {
+	Crafty.load(["../../assets/city.png", "../../assets/bg.png"], function () {
 		//define the sprites on the spritesheet
-		Crafty.sprite(TILE, "../../assets/spritesheet.png", {
-			fxos: [0, 0],
-			firefox: [1, 0],
-			marketplace: [2, 0],
-			bugzilla: [0, 1],
-			aurora: [1, 1],
-			thunderbird: [2, 1],
-			deadbug: [0, 2],
-			nightly: [1, 2],
-			empty: [2, 2]
+		Crafty.sprite(TILE, "../../assets/city.png", {
+			house: [1,0],
+			apartment: [2,0],
+			skyscraper: [3,0],
+			pond: [1,1],
+			car: [2,1],
+
+			road_s: [0,2],
+			road_h: [1,2],
+			road_v: [2,2],
+			road_x: [3,2],
+			road_e: [0,3],
+			road_l: [2,3],
+			road_t: [3,3],
+
+			empty: [0,2]
 		});
 
+		Crafty.background("url('../../assets/bg.png')");
 		//start the main scene
 		Crafty.scene("main");	
 	});
@@ -56,6 +61,11 @@ Crafty.scene("main", function () {
 
 	Match3.generateBoard(function (x, y, type) {
 		return Crafty.e("Tile").create(type, x, y);
+	});
+
+	Match3.generateRoads(function (tile, type, rotation) {
+		
+		tile.makeRoad(type, rotation);
 	});
 
 	console.log("ADD EVENTS");
@@ -78,17 +88,33 @@ Crafty.scene("main", function () {
 Crafty.c("Tile", {
 	init: function () {
 		this.requires("2D, Canvas");
+		
 	},
 
 	create: function (type, x, y) {
 		this.addComponent(type);
-		this.type = type;
+		this.type = this.spriteType = type;
 		this.x = x * TILE;
 		this.y = y * TILE;
 		this.row = y;
 		this.col = x;
 
 		return this;
+	},
+
+	clear: function () {
+		this.removeComponent(this.spriteType);
+		this.rotation = 0;
+
+		return this;
+	},
+
+	makeRoad: function (type, rotation) {
+		this.origin("center");
+		this.removeComponent(this.spriteType);
+		this.spriteType = "road_" + type;
+		this.addComponent(this.spriteType);
+		this.rotation = rotation;
 	}
 });
 
@@ -120,7 +146,7 @@ Crafty.c("shakeit", {
 
 function replaceTile (x, y, tile) {
 	var ent = Match3.board[x][y];
-	ent.removeComponent(ent.type).addComponent(tile);
+	ent.clear().addComponent(tile);
 	ent.type = tile;
 
 	var matches = Match3.checkThree(x, y, tile);
@@ -144,4 +170,9 @@ function replaceTile (x, y, tile) {
 			replaceTile(x, y, ent.type);
 		}, 800);
 	}
+
+	//regenerate road_s
+	Match3.generateRoads(function (tile, type, rotation) {
+		tile.makeRoad(type, rotation);
+	});
 }

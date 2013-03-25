@@ -32,18 +32,17 @@ var matchPatterns = [
 Match3 = {
 	board: [],
 
-	current: "nightly",
+	current: "house",
 
 	startTile: [
-		"nightly",
-		"aurora",
-		"firefox"
+		"house",
+		"apartment",
+		"skyscraper"
 	],
 
 	nextTile: {
-		"nightly": "aurora",
-		"aurora": "firefox",
-		"firefox": "fxos"
+		"house": "apartment",
+		"apartment": "skyscraper"
 	},
 
 	generateBoard: function (onItem) {
@@ -70,6 +69,89 @@ Match3 = {
 				}
 				
 				this.board[x][y] = onItem.call(this, x, y, type);
+			}
+		}
+	},
+
+	generateRoads: function (onItem) {
+		var dirs = {
+			up: [ 0, -1], //up
+			down: [ 0,  1], //down
+			left: [-1,  0], //left
+			right: [ 1,  0]  //right
+		};
+
+		for (var x = 0; x < BOARD_WIDTH; ++x) {
+			for (var y = 0; y < BOARD_HEIGHT; ++y) {
+				//only care about roads
+				if (!this.board[x][y] || this.board[x][y].type !== "empty") {
+					continue;
+				}
+
+				var tile = this.board[x][y];
+				var neighbors = {};
+				var type = "s";
+				var rotation = 0;
+				var count = 0;
+
+				//check up, down, left, right
+				for (var dir in dirs) {
+					var dx = x + dirs[dir][0];
+					var dy = y + dirs[dir][1];
+
+					//out of bounds
+					if (dx >= BOARD_WIDTH || dx < 0 || dy >= BOARD_HEIGHT || dy < 0)
+						continue;
+
+					var neighbor = this.board[dx][dy];
+					if (neighbor.type === "empty") {
+						count++;
+						neighbors[dir] = true;
+					}
+				}
+
+				if (count === 4) {
+					type = "x";
+				}
+				else if (count === 3) {
+					type = "t";
+
+					if (neighbors.up && neighbors.left && neighbors.right)
+						rotation = 180;
+					if (neighbors.up && neighbors.left && neighbors.down)
+						rotation = 90;
+					if (neighbors.up && neighbors.right && neighbors.down)
+						rotation = -90;
+
+				}
+				else if (count === 2) {
+					type = "l";
+
+					if (neighbors.left && neighbors.right) {
+						type = "h";
+					} else if (neighbors.up && neighbors.down) {
+						type = "v";
+					} else {
+						if (neighbors.up && neighbors.right)
+							rotation = 180;
+						if (neighbors.up && neighbors.left)
+							rotation = 90;
+						if (neighbors.down && neighbors.right)
+							rotation = -90;
+					}
+				}
+				else if (count === 1) {
+					type = "e";
+
+					if (neighbors.up)
+						rotation = -90;
+					if (neighbors.left)
+						rotation = -180;
+					if (neighbors.down)
+						rotation = 90;
+				}
+
+				onItem.call(this, tile, type, rotation);
 			}
 		}
 	},
@@ -106,6 +188,10 @@ Match3 = {
 	},
 
 	place: function (x, y) {
+		if (x >= BOARD_WIDTH || y >= BOARD_HEIGHT ||
+			x < 0 || y < 0)
+			return;
+
 		var ent = Match3.board[x][y];
 
 		//can only replace empty tiles
@@ -116,7 +202,7 @@ Match3 = {
 
 		replaceTile(x, y, Match3.current);
 
-		Match3.current = "nightly";
+		Match3.current = "house";
 	},
 
 	TILE: TILE,
