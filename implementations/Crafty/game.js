@@ -2,6 +2,7 @@ window.onload = start;
 
 var current = "nightly";
 var scale = window.innerWidth / Match3.REAL_WIDTH;
+var UI;
 
 function setScale () {
 	scale = window.innerWidth / Match3.REAL_WIDTH;
@@ -53,6 +54,7 @@ function start () {
 		//start the main scene
 		Crafty.scene("main");	
 	});
+
 }
 
 /**
@@ -85,6 +87,47 @@ Crafty.scene("main", function () {
 		var y = Math.floor((pos.clientY / scale) / TILE);
 
 		Match3.place(x, y);
+	}
+
+
+	UI = Crafty.e("2D, DOM, Color, UI").attr({
+		x: 0,
+		y: Match3.REAL_HEIGHT - Match3.UI_HEIGHT,
+		w: Match3.REAL_WIDTH,
+		h: Match3.UI_HEIGHT,
+	}).color("#177407");
+});
+
+Crafty.c("UI", {
+	_score: 0,
+
+	init: function () {
+		this.scoreEnt = Crafty.e("2D, DOM, Text, Score").attr({
+			x: 280,
+			y: Match3.REAL_HEIGHT - 50,
+			w: 100,
+			h: 50,
+			z: 100
+		}).text(0);
+
+		this.labelNext = Crafty.e("2D, DOM, Text, Label").attr({
+			x: 10,
+			y: Match3.REAL_HEIGHT - 50,
+			w: 100,
+			h: 50
+		}).text("Next tile");
+
+		this.labelScore = Crafty.e("2D, DOM, Text, Label").attr({
+			x: 220,
+			y: Match3.REAL_HEIGHT - 50,
+			w: 100,
+			h: 50
+		}).text("Score");
+	},
+
+	updateScore: function (score) {
+		this._score += score;
+		this.scoreEnt.text(this._score + "");
 	}
 });
 
@@ -153,6 +196,8 @@ function replaceTile (x, y, tile) {
 	ent.type = tile;
 
 	var matches = Match3.checkThree(x, y, tile);
+	console.log(tile)
+	UI.updateScore(Match3.scores[tile]);
 
 	if (matches.length) {
 		console.log(matches);
@@ -160,6 +205,9 @@ function replaceTile (x, y, tile) {
 		//remove each tile
 		matches.forEach(function (match) {
 			//TODO: refactor this one, two business
+			var decreaseScore = Match3.scores[match.one.type] + Match3.scores[match.two.type];
+			UI.updateScore(-decreaseScore);
+
 			match.one.removeComponent(match.one.type).addComponent("empty");
 			match.two.removeComponent(match.two.type).addComponent("empty");
 			match.one.type = match.two.type = "empty";

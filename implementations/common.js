@@ -1,9 +1,10 @@
 var TILE = 64;
 var BOARD_WIDTH = 6;
 var BOARD_HEIGHT = 6;
-var REAL_WIDTH = TILE * BOARD_WIDTH;
-var REAL_HEIGHT = TILE * BOARD_HEIGHT;
 var UI_HEIGHT = 50;
+var REAL_WIDTH = TILE * BOARD_WIDTH;
+var REAL_HEIGHT = TILE * BOARD_HEIGHT + UI_HEIGHT;
+
 
 var matchPatterns = [
 	
@@ -207,15 +208,48 @@ Match3 = {
 
 		replaceTile(x, y, Match3.current);
 
-		Match3.current = "slum";
+		Match3.current = Match3.chooseNext();
 	},
 
+	chooseNext: function () {
+		var rand = Math.random();
+		var type = "slum";
+
+		if (rand < 0.02) {
+			type = "crystal";
+		}
+		else if (rand < 0.04) {
+			type = "mansion"
+		}
+		else if (rand < 0.08) {
+			type = "apartment";
+		}
+		else if (rand < 0.18) {
+			type = "house";
+		}
+		else if (rand < 0.22) {
+			type = "car";
+		}
+
+		return type;
+	},
+
+	//export constants
 	TILE: TILE,
 	BOARD_WIDTH: BOARD_WIDTH,
 	BOARD_HEIGHT: BOARD_HEIGHT,
 	REAL_WIDTH: REAL_WIDTH,
 	REAL_HEIGHT: REAL_HEIGHT,
-	UI_HEIGHT: UI_HEIGHT
+	UI_HEIGHT: UI_HEIGHT,
+
+	scores: {
+		"empty": 0,
+		"slum": 100,
+		"house": 500,
+		"mansion": 2000,
+		"apartment": 10000,
+		"skyscraper": 50000
+	}
 }
 
 
