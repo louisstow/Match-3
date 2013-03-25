@@ -29,11 +29,14 @@ function start () {
 	Crafty.load(["../../assets/city.png", "../../assets/bg.png"], function () {
 		//define the sprites on the spritesheet
 		Crafty.sprite(TILE, "../../assets/city.png", {
+			slum: [0,0],
 			house: [1,0],
 			apartment: [2,0],
 			skyscraper: [3,0],
+			mansion: [4,0],
 			pond: [1,1],
 			car: [2,1],
+			crystal: [3,1],
 
 			road_s: [0,2],
 			road_h: [1,2],

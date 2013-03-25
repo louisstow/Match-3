@@ -32,17 +32,20 @@ var matchPatterns = [
 Match3 = {
 	board: [],
 
-	current: "house",
+	current: "slum",
 
 	startTile: [
+		"slum",
 		"house",
 		"apartment",
 		"skyscraper"
 	],
 
 	nextTile: {
-		"house": "apartment",
-		"apartment": "skyscraper"
+		"slum": "house",
+		"house": "mansion",
+		"mansion": "apartment",
+		"apartment": "skyscraper",
 	},
 
 	generateBoard: function (onItem) {
@@ -55,11 +58,13 @@ Match3 = {
 				var randomValue = Math.random();
 				var type = "empty";
 
-				if (randomValue < 0.05) {
-					type = this.startTile[2];
+				if (randomValue < 0.02) {
+					type = "pond";
 				} else if (randomValue < 0.1) {
-					type = this.startTile[1];
+					type = this.startTile[2];
 				} else if (randomValue < 0.2) {
+					type = this.startTile[1];
+				} else if (randomValue < 0.3) {
 					type = this.startTile[0];
 				}
 
@@ -202,7 +207,7 @@ Match3 = {
 
 		replaceTile(x, y, Match3.current);
 
-		Match3.current = "house";
+		Match3.current = "slum";
 	},
 
 	TILE: TILE,
