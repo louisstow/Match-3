@@ -32,6 +32,7 @@ var matchPatterns = [
 
 Match3 = {
 	board: [],
+	blockers: [],
 
 	current: "slum",
 
@@ -193,6 +194,47 @@ Match3 = {
 		return result;
 	},
 
+	moveBlockers: function () {
+		var blockers = Match3.blockers;
+		var dirs = [
+			[-1, 0],
+			[1, 0],
+			[0, -1],
+			[0, 1]
+		];
+
+		for (var b = 0; b < blockers.length; ++b) {
+			var car = blockers[b];
+			
+			dirs.sort(function () {
+				return (Math.round(Math.random())-0.5);
+			});
+
+			//loop over every direction
+			for (var dir in dirs) {
+				//calculate the new coords
+				var nx = car.col + dirs[dir][0];
+				var ny = car.row + dirs[dir][1];
+
+				//check out of bounds
+				if (nx >= BOARD_WIDTH || ny >= BOARD_HEIGHT || nx < 0 || ny < 0)
+					continue;
+
+				var tile = this.board[nx][ny];
+				
+				if (tile.type === "empty" && !tile.blocked) {
+					//switch the blocked flags
+					tile.blocked = true;
+					console.log("WTF", this.board[car.col][car.row])
+					this.board[car.col][car.row].blocked = false;
+
+					Match3.onMoveBlocker(car, nx, ny);
+					break;
+				}
+			}	
+		}
+	},
+
 	place: function (x, y) {
 		if (x >= BOARD_WIDTH || y >= BOARD_HEIGHT ||
 			x < 0 || y < 0)
@@ -201,15 +243,36 @@ Match3 = {
 		var ent = Match3.board[x][y];
 
 		//can only replace empty tiles
-		if (ent.type !== "empty") { 
-			console.log(ent, ent.type)
+		if (ent.type !== "empty" || ent.blocked) { 
+			console.log(ent, ent.type, ent.blocked);
 			return;
 		}
 
-		replaceTile(x, y, Match3.current);
+		if (Match3.current === "car") {
+			Match3.placeBlocker(x, y);
+		}
+		else if (Match3.current === "crystal") {
+			Match3.placeWildcard(x, y);
+		}
+		else {
+			replaceTile(x, y, Match3.current);
+		}
 
 		Match3.current = Match3.chooseNext();
-		if (Match3.onNextItem) { Match3.onNextItem(Match3.current); }
+		if (Match3.onNextItem) { 
+			Match3.onNextItem(Match3.current); 
+		}
+
+		Match3.moveBlockers();
+	},
+
+	placeBlocker: function (x, y) {
+		this.blockers.push(Match3.onBlocker(x, y));
+		this.board[x][y].blocked = true;
+	},
+
+	placeWildcard: function (x, y) {
+		if (Match3.onWildcard) Match3.onWildcard(x, y);
 	},
 
 	chooseNext: function () {

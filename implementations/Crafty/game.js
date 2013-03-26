@@ -202,6 +202,25 @@ Match3.onNextItem = function (item) {
 	});
 }
 
+Match3.onBlocker = function (x, y) {
+	return Crafty.e("2D, Canvas, car, Tween").attr({
+		x: x * Match3.TILE,
+		y: y * Match3.TILE,
+		row: y,
+		col: x
+	});
+}
+
+Match3.onMoveBlocker = function (car, x, y) {
+	car.attr({
+		row: y,
+		col: x
+	}).tween({
+		x: x * Match3.TILE,
+		y: y * Match3.TILE,
+	}, 50);
+}
+
 function replaceTile (x, y, tile) {
 	var ent = Match3.board[x][y];
 	ent.clear().addComponent(tile);
