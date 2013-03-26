@@ -209,6 +209,7 @@ Match3 = {
 		replaceTile(x, y, Match3.current);
 
 		Match3.current = Match3.chooseNext();
+		if (Match3.onNextItem) { Match3.onNextItem(Match3.current); }
 	},
 
 	chooseNext: function () {

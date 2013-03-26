@@ -90,7 +90,7 @@ Crafty.scene("main", function () {
 	}
 
 
-	UI = Crafty.e("2D, DOM, Color, UI").attr({
+	UI = Crafty.e("2D, Canvas, Color, UI").attr({
 		x: 0,
 		y: Match3.REAL_HEIGHT - Match3.UI_HEIGHT,
 		w: Match3.REAL_WIDTH,
@@ -123,6 +123,13 @@ Crafty.c("UI", {
 			w: 100,
 			h: 50
 		}).text("Score");
+
+		this.iconNext = Crafty.e("2D, Canvas, slum").attr({
+			x: 90,
+			y: Match3.REAL_HEIGHT - 48,
+			w: 40,
+			h: 40
+		});
 	},
 
 	updateScore: function (score) {
@@ -188,7 +195,12 @@ Crafty.c("shakeit", {
 	}
 });
 
-
+Match3.onNextItem = function (item) {
+	UI.iconNext.addComponent(item).attr({
+		w: 40,
+		h: 40
+	});
+}
 
 function replaceTile (x, y, tile) {
 	var ent = Match3.board[x][y];
