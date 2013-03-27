@@ -231,8 +231,6 @@ function replaceTile (x, y, tile) {
 	UI.updateScore(Match3.scores[tile]);
 
 	if (matches.length) {
-		console.log(matches);
-
 		//remove each tile
 		matches.forEach(function (match) {
 			//TODO: refactor this one, two business
@@ -241,6 +239,10 @@ function replaceTile (x, y, tile) {
 
 			match.one.removeComponent(match.one.type).addComponent("empty");
 			match.two.removeComponent(match.two.type).addComponent("empty");
+			
+			if (tile === "crystal")
+				tile = match.one.type;
+
 			match.one.type = match.two.type = "empty";
 		});
 		

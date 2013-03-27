@@ -182,7 +182,21 @@ Match3 = {
 			var one = Match3.getRelative(x, y, direction[0]);
 			var two = Match3.getRelative(x, y, direction[1]);
 
-			if (one && two && one.type === tile && two.type === tile) {
+			if (!(one && two)) return;
+			if (one.type === "empty" || two.type === "empty") return;
+
+			var match = false;
+
+			//if wildcard, make sure one and two are same types
+			if (tile === "crystal" && one.type === two.type)
+				match = true;
+			//else make sure same type as tile
+			else if ((one.type === tile || one.type === "crystal") && 
+					 (two.type === tile || two.type === "crystal"))
+				match = true;
+
+			if (match) {
+				console.log(tile, one.type, two.type)
 				result.push({
 					direction: direction,
 					one: one,
@@ -251,9 +265,6 @@ Match3 = {
 		if (Match3.current === "car") {
 			Match3.placeBlocker(x, y);
 		}
-		else if (Match3.current === "crystal") {
-			Match3.placeWildcard(x, y);
-		}
 		else {
 			replaceTile(x, y, Match3.current);
 		}
@@ -279,16 +290,13 @@ Match3 = {
 		var rand = Math.random();
 		var type = "slum";
 
-		if (rand < 0.02) {
+		if (rand < 0.04) {
 			type = "crystal";
 		}
-		else if (rand < 0.04) {
+		else if (rand < 0.07) {
 			type = "mansion"
 		}
-		else if (rand < 0.08) {
-			type = "apartment";
-		}
-		else if (rand < 0.18) {
+		else if (rand < 0.16) {
 			type = "house";
 		}
 		else if (rand < 0.22) {
@@ -308,6 +316,7 @@ Match3 = {
 
 	scores: {
 		"empty": 0,
+		"crystal": 0,
 		"slum": 100,
 		"house": 500,
 		"mansion": 2000,
