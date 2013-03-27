@@ -141,7 +141,7 @@ Crafty.c("UI", {
 Crafty.c("Tile", {
 	init: function () {
 		this.requires("2D, Canvas");
-		
+		this.z = 10;
 	},
 
 	create: function (type, x, y) {
@@ -207,7 +207,8 @@ Match3.onBlocker = function (x, y) {
 		x: x * Match3.TILE,
 		y: y * Match3.TILE,
 		row: y,
-		col: x
+		col: x,
+		z: 20
 	});
 }
 
@@ -219,6 +220,25 @@ Match3.onMoveBlocker = function (car, x, y) {
 		x: x * Match3.TILE,
 		y: y * Match3.TILE,
 	}, 50);
+}
+
+Match3.onGameOver = function () {
+	var box = Crafty.e("2D, DOM, Dialog, HTML, Mouse").attr({
+		x: 50,
+		y: 50,
+		w: Match3.REAL_WIDTH - 120,
+		h: Match3.REAL_HEIGHT - 170
+	}).replace([
+		"<h1>Game Over</h1>",
+		"<strong>Your score: </strong>",
+		"<em>" + UI._score + "</em>",
+		"<p>Tap to replay</p>"
+	].join(""));
+
+	//reload the page to refresh
+	box._element.onclick = function () {
+		window.location.reload();
+	};
 }
 
 function replaceTile (x, y, tile) {

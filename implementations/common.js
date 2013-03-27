@@ -182,8 +182,10 @@ Match3 = {
 			var one = Match3.getRelative(x, y, direction[0]);
 			var two = Match3.getRelative(x, y, direction[1]);
 
+			//immediately stop reporting patterns
 			if (!(one && two)) return;
 			if (one.type === "empty" || two.type === "empty") return;
+			if (one.type === "crystal" || two.type === "crystal") return;
 
 			var match = false;
 
@@ -275,6 +277,7 @@ Match3 = {
 		}
 
 		Match3.moveBlockers();
+		Match3.checkGameover();
 	},
 
 	placeBlocker: function (x, y) {
@@ -282,8 +285,21 @@ Match3 = {
 		this.board[x][y].blocked = true;
 	},
 
-	placeWildcard: function (x, y) {
-		if (Match3.onWildcard) Match3.onWildcard(x, y);
+	checkGameover: function () {
+		var filled = 0;
+		var total = BOARD_WIDTH * BOARD_HEIGHT;
+
+		for (var x = 0; x < BOARD_WIDTH; ++x) {
+			for (var y = 0; y < BOARD_HEIGHT; ++y) {
+				var tile = this.board[x][y];
+
+				if (tile.type !== "empty" || tile.blocked)
+					filled++;
+			}
+		}
+
+		if (filled == total)
+			Match3.onGameOver && Match3.onGameOver();
 	},
 
 	chooseNext: function () {
