@@ -1,9 +1,11 @@
+//entry point to the game
 window.onload = start;
 
-var current = "nightly";
 var scale = window.innerWidth / Match3.REAL_WIDTH;
 var UI;
 
+//method to scale the stage to fit the screen
+//using CSS3 transform
 function setScale () {
 	scale = window.innerWidth / Match3.REAL_WIDTH;
 
@@ -17,6 +19,7 @@ function setScale () {
 	stageStyle.transform = stageStyle.webkitTransform = stageStyle.mozTransform = "scale("+scale+")";
 }
 
+//main function
 function start () {
 	//init Crafty with game dimensions
 	Crafty.init(
@@ -50,8 +53,12 @@ function start () {
 			empty: [0,2]
 		});
 
+		//set the background style property of the
+		//stage
 		Crafty.background("url('../../assets/bg.png')");
-		//start the main scene
+
+		//start the main scene once everything
+		//has been loaded
 		Crafty.scene("main");	
 	});
 
@@ -62,34 +69,37 @@ function start () {
 * the game exists.
 */
 Crafty.scene("main", function () {
-	console.log("Start scene");
-
+	//create a crafty entity and save in the
+	//board structure
 	Match3.generateBoard(function (x, y, type) {
 		return Crafty.e("Tile").create(type, x, y);
 	});
 
+	//transform the entity into a road
 	Match3.generateRoads(function (tile, type, rotation) {
-		
 		tile.makeRoad(type, rotation);
 	});
 
-	console.log("ADD EVENTS");
+	//add some events for listening to input
+	//and resize events
 	Crafty.addEvent(this, window, "click", onInputSelect);
 	Crafty.addEvent(this, window, "touchend", onInputSelect);
 	Crafty.addEvent(this, window, "resize", setScale);
 
+	//when the user touchdown or clicks stage
 	function onInputSelect (e) {
-		
+		//find the position of the touch
 		var pos = (e.type === "touchend") ? e.changedTouches[0] : e;
-		console.log(e.type, pos.clientX, pos.clientY);
 
+		//calculate the board position
 		var x = Math.floor((pos.clientX / scale) / TILE);
 		var y = Math.floor((pos.clientY / scale) / TILE);
 
+		//attempt to place tile at the position
 		Match3.place(x, y);
 	}
 
-
+	//create the bottom UI box
 	UI = Crafty.e("2D, Canvas, Color, UI").attr({
 		x: 0,
 		y: Match3.REAL_HEIGHT - Match3.UI_HEIGHT,
@@ -98,10 +108,15 @@ Crafty.scene("main", function () {
 	}).color("#177407");
 });
 
+/**
+* Component for the UI
+*/
 Crafty.c("UI", {
+	//score counter
 	_score: 0,
 
 	init: function () {
+		//create the widgets in the UI box
 		this.scoreEnt = Crafty.e("2D, DOM, Text, Score").attr({
 			x: 280,
 			y: Match3.REAL_HEIGHT - 50,
@@ -132,18 +147,25 @@ Crafty.c("UI", {
 		});
 	},
 
+	//helper method to update score counter
+	//and display in the UI
 	updateScore: function (score) {
 		this._score += score;
 		this.scoreEnt.text(this._score + "");
 	}
 });
 
+/**
+* Component for each Tile
+*/
 Crafty.c("Tile", {
 	init: function () {
 		this.requires("2D, Canvas");
 		this.z = 10;
 	},
 
+	//constructor function to create
+	//a tile
 	create: function (type, x, y) {
 		this.addComponent(type);
 		this.type = this.spriteType = type;
@@ -155,6 +177,7 @@ Crafty.c("Tile", {
 		return this;
 	},
 
+	//resets internal data so can be reused
 	clear: function () {
 		this.removeComponent(this.spriteType);
 		this.rotation = 0;
@@ -162,6 +185,8 @@ Crafty.c("Tile", {
 		return this;
 	},
 
+	//helper method to turn the tile
+	//into a road tile
 	makeRoad: function (type, rotation) {
 		this.origin("center");
 		this.removeComponent(this.spriteType);
@@ -171,6 +196,10 @@ Crafty.c("Tile", {
 	}
 });
 
+/**
+* Quick component to shake the entities position
+* for 800ms
+*/
 Crafty.c("shakeit", {
 	init: function () {
 		this.originalX = this.x;
@@ -195,6 +224,7 @@ Crafty.c("shakeit", {
 	}
 });
 
+//Display the next item in the UI
 Match3.onNextItem = function (item) {
 	UI.iconNext.addComponent(item).attr({
 		w: 40,
@@ -202,6 +232,8 @@ Match3.onNextItem = function (item) {
 	});
 }
 
+//Handler for when a blocker is created.
+//Returns a new Crafty entity
 Match3.onBlocker = function (x, y) {
 	return Crafty.e("2D, Canvas, car, Tween").attr({
 		x: x * Match3.TILE,
@@ -212,6 +244,8 @@ Match3.onBlocker = function (x, y) {
 	});
 }
 
+//Animate the blocker (car) to its new
+//position.
 Match3.onMoveBlocker = function (car, x, y) {
 	car.attr({
 		row: y,
@@ -222,6 +256,8 @@ Match3.onMoveBlocker = function (car, x, y) {
 	}, 50);
 }
 
+//Handler for game over state. Will display
+//a message over the screen.
 Match3.onGameOver = function () {
 	var box = Crafty.e("2D, DOM, Dialog, HTML, Mouse").attr({
 		x: 50,
@@ -235,47 +271,60 @@ Match3.onGameOver = function () {
 		"<p>Tap to replay</p>"
 	].join(""));
 
-	//reload the page to refresh
+	//reload the page to replay game
 	box._element.onclick = function () {
 		window.location.reload();
 	};
 }
 
+//Handler for when a tile can be replaced.
+//Will check for any matches.
 Match3.onReplaceTile = function (x, y, tile) {
+	//replace empty tile with placed tile
 	var ent = Match3.board[x][y];
 	ent.clear().addComponent(tile);
 	ent.type = tile;
 
+	//check for any matches after placement
 	var matches = Match3.checkThree(x, y, tile);
-	console.log(tile)
+
+	//update the score to match new placement
 	UI.updateScore(Match3.scores[tile]);
 
 	if (matches.length) {
 		//remove each tile
 		matches.forEach(function (match) {
-			//TODO: refactor this one, two business
+			//decrease score for the tiles we remove
 			var decreaseScore = Match3.scores[match.one.type] + Match3.scores[match.two.type];
 			UI.updateScore(-decreaseScore);
 
 			match.one.removeComponent(match.one.type).addComponent("empty");
 			match.two.removeComponent(match.two.type).addComponent("empty");
 			
+			//if the tile was a crystal, replace
+			//with the matched tile
 			if (tile === "crystal")
 				tile = match.one.type;
 
 			match.one.type = match.two.type = "empty";
 		});
 		
+		//add some shaking effects
 		ent.addComponent("shakeit");
+
+		//when the shaking is over, transform tile
 		setTimeout(function () {
+			//turn into the next tile after match
 			ent.type = Match3.nextTile[tile];
 			ent.addComponent(ent.type);
 
+			//call recursively incase there are more matches
+			//after transformation
 			Match3.onReplaceTile(x, y, ent.type);
 		}, 800);
 	}
 
-	//regenerate road_s
+	//regenerate roads
 	Match3.generateRoads(function (tile, type, rotation) {
 		tile.makeRoad(type, rotation);
 	});
