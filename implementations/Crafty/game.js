@@ -241,7 +241,7 @@ Match3.onGameOver = function () {
 	};
 }
 
-function replaceTile (x, y, tile) {
+Match3.onReplaceTile = function (x, y, tile) {
 	var ent = Match3.board[x][y];
 	ent.clear().addComponent(tile);
 	ent.type = tile;
@@ -271,7 +271,7 @@ function replaceTile (x, y, tile) {
 			ent.type = Match3.nextTile[tile];
 			ent.addComponent(ent.type);
 
-			replaceTile(x, y, ent.type);
+			Match3.onReplaceTile(x, y, ent.type);
 		}, 800);
 	}
 

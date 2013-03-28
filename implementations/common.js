@@ -268,7 +268,7 @@ Match3 = {
 			Match3.placeBlocker(x, y);
 		}
 		else {
-			replaceTile(x, y, Match3.current);
+			Match3.onReplaceTile(x, y, Match3.current);
 		}
 
 		Match3.current = Match3.chooseNext();
