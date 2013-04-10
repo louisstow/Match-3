@@ -30,7 +30,7 @@ function start () {
 	setScale();
 
 	//preload our assets
-	Crafty.load(["../../assets/city.png", "../../assets/bg.png"], function () {
+	Crafty.load(["../../assets/city.png", "../../assets/bg.png", "../../assets/logo.png"], function () {
 		//define the sprites on the spritesheet
 		Crafty.sprite(TILE, "../../assets/city.png", {
 			slum: [0,0],
@@ -57,6 +57,8 @@ function start () {
 		//stage
 		Crafty.background("url('../../assets/bg.png')");
 
+		
+
 		//start the main scene once everything
 		//has been loaded
 		Crafty.scene("main");	
@@ -69,6 +71,17 @@ function start () {
 * the game exists.
 */
 Crafty.scene("main", function () {
+	//show the logo then fade out
+	Crafty.e("2D, DOM, Image, Tween")
+		.attr({x: -3, y: 150, z: 200, w: 200})
+		.image("../../assets/logo.png")
+		.timeout(function () {
+			this.tween({
+				alpha: 0
+			}, 70);	
+		}, 1200)
+			
+
 	//create a crafty entity and save in the
 	//board structure
 	Match3.generateBoard(function (x, y, type) {
