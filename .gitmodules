@@ -1,0 +1,3 @@
+[submodule "implementations/Crafty/inneractive"]
+	path = implementations/Crafty/inneractive
+	url = git@github.com:mozilla/inneractive.git
